@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chess App</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="static/js/chessboard-1.0.0.min.js"></script>
+    <link rel="stylesheet" href="static/css/chessboard-1.0.0.min.css">
+</head>
+<body>
+    <div id="board" style="width: 400px"></div>
+    <script>
+        var board = ChessBoard('board', 'start');
+
+        function makeMove(move) {
+            $.ajax({
+                url: '/api/play',
+                method: 'POST',
+                data: JSON.stringify({
+                    'fen': board.fen(),
+                    'move': move
+                }),
+                contentType: 'application/json',
+                success: function(response) {
+                    if (response.status === 'success') {
+                        board.position(response.fen);
+                        setTimeout(function() {
+                            board.move(response.move);
+                        }, 500);
+                    } else {
+                        alert(response.message);
+                    }
+                }
+            });
+        }
+
+        board.draggable = function(piece) {
+            return piece.search(/^b/) === -1;
+        };
+
+        board.onDrop = function(source, target, piece) {
+            var move = source + target;
+            makeMove(move);
+        };
+    </script>
+</body>
+</html>
